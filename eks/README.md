@@ -78,7 +78,10 @@ $ tofu init
 $ tofu apply
 ```
 `tofu init` will inspect the configuration and download any necessary terraform modules.
-`tofu apply` will create all the needed resources in your AWS account, this might take 20-30 minutes. The script will generate a `outputs/cluster_setup.u` file that that contains a `ClientConfig` which you can use to deploy services and
+`tofu apply` will create all the needed resources in your AWS account, this might take 20-30 minutes. Upon successful completion, `tofu apply` will display all out the "outputs" which can later be retrieved by running `tofu output`.
+
+### Using the cluster
+The script will generate a `outputs/cluster_setup.u` file that that contains a `ClientConfig` which you can use to deploy services and
 run jobs against your cluster. 
 
 You can save this output into your scratch file, or load this file into a ucm session with `> load /path/to/outputs/cluster_setup.u`. and then you should be able to `> run myJob` to launch a job on your new cluster!

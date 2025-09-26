@@ -12,3 +12,4 @@ nimbus-secrets.json
 secrets.env
 .envrc
 outputs/
+
