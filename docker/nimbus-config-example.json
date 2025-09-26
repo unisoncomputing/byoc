@@ -1,0 +1,36 @@
+{
+  "environment" : "local",
+  "bindPorts": {
+    "publicHttp" : 8082,
+    "gossipHttp" : 8081
+  },
+  "blobFetcher": {
+    "bucket": "unison-cloud-services",
+    "awsConfig": {
+      "hostName": "unison-cloud-s3",
+      "port": 9000,
+      "https": false,
+      "region": "us-west-2"
+    }
+  },
+  "userBlobFetcher": {
+    "bucket": "unison-cloud-user-blobs",
+    "awsConfig": {
+      "hostName": "unison-cloud-s3",
+      "port": 9000,
+      "https": false,
+      "region": "us-west-2"
+    }
+  },
+  "vault": {
+    "host": "unison-cloud-vault",
+    "port": 8200,
+    "scheme": "http"
+  },
+  "environmentsMount": "unison-cloud-environments",
+  "dynamo": {
+    "host": "unison-cloud-dynamo",
+    "port": 8000,
+    "type": "local"
+  }
+}

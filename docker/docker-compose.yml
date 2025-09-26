@@ -1,0 +1,155 @@
+# run this with:
+#
+# docker compose -f docker-compose.yml --env-file secrets-example.env --env-file .env up
+
+secrets:
+  nimbus-config.json:
+    file: ./nimbus-config-example.json
+  nimbus-secrets.json:
+    # copy nimbus-secrets-example.json, apply your changes, and save it as nimbus-secrets.json
+    file: ./nimbus-secrets.json
+
+volumes:
+  unison-cloud-s3-data:
+  unison-cloud-dynamodb-data:
+
+networks:
+  default:
+    name: unison-cloud
+
+services:
+
+  # The dynamodb-local docker image runs as a dynamodblocal user, so we need to
+  # change the ownership of the mounted directory to avoid permissions issues.
+  unison-cloud-init-volumes:
+    image: alpine
+    restart: "no"
+    entrypoint: |
+        /bin/sh -c "chown 1000:1000 /home/dynamodblocal/data"
+    volumes:
+      - type: volume
+        source: unison-cloud-dynamodb-data
+        target: /home/dynamodblocal/data
+
+  unison-cloud-vault:
+    image: hashicorp/vault
+    environment:
+      VAULT_ADDR: "http://127.0.0.1:${VAULT_PORT}"
+      VAULT_DEV_ROOT_TOKEN_ID: "$UNISON_CLOUD_VAULT_TOKEN"
+    healthcheck:
+      test: "vault status"
+      start_period: 30s
+      timeout: 1s
+    cap_add:
+      - IPC_LOCK
+
+  unison-cloud-init-vault:
+    image: hashicorp/vault
+    depends_on:
+      unison-cloud-vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: "http://unison-cloud-vault:${VAULT_PORT}"
+      VAULT_TOKEN: "$UNISON_CLOUD_VAULT_TOKEN"
+    command:
+      - /bin/sh
+      - '-c'
+      - 'vault secrets list | grep -q ${UNISON_CLOUD_ENVIRONMENTS_MOUNT} || vault secrets enable -path=${UNISON_CLOUD_ENVIRONMENTS_MOUNT} kv-v2'
+
+  unison-cloud-s3:
+    image: quay.io/minio/minio
+    command: server /data
+    volumes:
+      - type: volume
+        source: unison-cloud-s3-data
+        target: /data
+    healthcheck:
+      test: "mc ready local"
+      start_period: 30s
+      timeout: 1s
+    networks:
+      default:
+        aliases:
+          - ${UNISON_CLOUD_SERVICES_BUCKET_NAME}.unison-cloud-s3
+          - ${UNISON_CLOUD_USER_BLOBS_BUCKET_NAME}.unison-cloud-s3
+    environment:
+      MINIO_ROOT_USER: "unison-cloud"
+      MINIO_ROOT_PASSWORD: "$UNISON_CLOUD_S3_TOKEN"
+      MINIO_DOMAIN: "unison-cloud-s3"
+
+  unison-cloud-init-s3:
+    image: minio/mc
+    depends_on:
+      unison-cloud-s3:
+        condition: service_healthy
+    entrypoint: ""
+    command:
+      - /bin/sh
+      - '-c'
+      - |
+          mc alias set unison-cloud http://unison-cloud-s3:9000 unison-cloud INSECURE_DEV_TOKEN &&
+          mc mb --ignore-existing unison-cloud/${UNISON_CLOUD_SERVICES_BUCKET_NAME} &&
+          mc mb --ignore-existing unison-cloud/${UNISON_CLOUD_USER_BLOBS_BUCKET_NAME}
+
+
+  unison-cloud-dynamo:
+    image: amazon/dynamodb-local:3.0.0
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+    volumes:
+      - type: volume
+        source: unison-cloud-dynamodb-data
+        target: /home/dynamodblocal/data
+    depends_on:
+      unison-cloud-init-volumes:
+        condition: service_completed_successfully
+    healthcheck:
+      test: "curl localhost:8000"
+      start_period: 10s
+      timeout: 1s
+
+  unison-cloud-init-dynamo:
+    image: amazon/aws-cli
+    depends_on:
+      unison-cloud-dynamo:
+        condition: service_healthy
+    environment:
+      AWS_REGION: ""
+      AWS_ACCESS_KEY_ID: "$UNISON_CLOUD_AWS_ACCESS_KEY_ID"
+      AWS_SECRET_ACCESS_KEY: "$UNISON_CLOUD_AWS_SECRET_ACCESS_KEY"
+      AWS_ENDPOINT_URL: "http://unison-cloud-dynamo:8000"
+    entrypoint: ""
+    command:
+      - /bin/sh
+      - '-c'
+      - 'aws dynamodb list-tables | grep "\"${UNISON_CLOUD_STORAGE_TABLE_NAME}\"" >/dev/null || aws dynamodb create-table --table-name ${UNISON_CLOUD_STORAGE_TABLE_NAME} --attribute-definitions AttributeName=K,AttributeType=B AttributeName=NS,AttributeType=S --key-schema AttributeName=K,KeyType=HASH AttributeName=NS,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5'
+
+  unison-cloud-nimbus:
+    image: "$UNISON_CLOUD_DOCKER_IMAGE"
+    deploy:
+      replicas: 2
+    depends_on:
+      unison-cloud-init-s3:
+        condition: service_completed_successfully
+      unison-cloud-init-dynamo:
+        condition: service_completed_successfully
+      unison-cloud-init-vault:
+        condition: service_completed_successfully
+      unison-cloud-s3:
+        condition: service_healthy
+      unison-cloud-dynamo:
+        condition: service_healthy
+      unison-cloud-vault:
+        condition: service_healthy
+    environment:
+      NIMBUS_CONFIG_DIR: '/run/secrets'
+    secrets:
+      - nimbus-config.json
+      - nimbus-secrets.json
+    stop_grace_period: "6m"
+
+  unison-cloud-load-balancer:
+    image: caddy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./caddy:/etc/caddy

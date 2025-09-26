@@ -1,0 +1,9 @@
+http://:8080 {
+  reverse_proxy {
+    dynamic a {
+      name unison-cloud-nimbus
+      port 8082
+    }
+  }
+}
+

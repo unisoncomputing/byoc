@@ -1,0 +1,31 @@
+{
+    "host": "IPADDRESS",
+    "bindPorts": {
+      "publicHttp": 8082,
+      "gossipHttp": 8081
+    },
+    "blobFetcher": {
+      "bucket": "${services_bucket_name}",
+      "awsConfig": {
+          "region": "${region}"
+      }
+    },
+    "userBlobFetcher": {
+      "bucket": "${blob_bucket_name}",
+      "awsConfig": {
+          "region": "${region}"
+      }
+    },
+    "environmentsMount": "environments-staging",
+    "dynamo": {
+      "type": "cloud",
+      "region": "${region}",
+      "table": "${dynamodb_table}"
+    },
+    "cloudApiToken": "${cluster_token}",
+    "cloudApiInstances": [
+      {
+        "uri": "https://${cluster_name}.byoc.unison.cloud"
+      }
+    ]
+}

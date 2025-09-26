@@ -1,0 +1,22 @@
+# AWS Configuration
+aws_region = "us-west-2"
+aws_availability_zones = ["us-west-2a", "us-west-2b"]
+
+# Cluster Configuration
+cluster_name = "my-unison-cluster"
+
+# Network Configuration
+vpc_cidr = "10.0.0.0/16"
+public_subnets = ["10.0.20.0/25", "10.0.20.128/25"]
+private_subnets = ["10.0.30.0/25", "10.0.30.128/25"]
+
+# SSH Configuration (optional, leave ssh_key_name empty to skip SSH key assignment)
+ssh_key_name = ""
+allowed_ssh_cidrs = ["0.0.0.0/0"]
+
+# Unison Cloud Configuration
+unison_cloud_image_tag = "latest"
+unison_instance_type = "t3.medium"
+unison_min_instances = 2
+unison_max_instances = 3
+unison_desired_instances = 2

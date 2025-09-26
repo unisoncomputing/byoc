@@ -1,0 +1,61 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker
+  - awscli
+
+users:
+  - name: unison
+    groups:
+      - sudo
+      - docker
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC1GlJMiJqk8u4lsGdIUDqgeS2xu3aZqn5gX31dQYOVJg5jADKv1LY7c+0NCApZeX2RR5kVKQQnTwm1xh2DiQA/TXCLdM461O2oTS8eoEQLnHw21uV84lOkgIYHJRFtgx2YDPbTfI6TMShXbVTIFyp/KYszbXC9IEI2IdrJfAMDAy5fQLzUQDM/ekrzdr9Y+Cczjxku61d4gtOyBQAbObK9zMVl3oL8cXOGiuugVxqVwBQtQfPoCCm5Ldvt5Fr0Ama+ERGxn1ZbEBz0VTlLVF0n64j7hqI8foG/2eg5vtMIM8LhzEbTSVyg2m5s2RqjnwkGaMVAj/BW9DNeeFANzZa5 stew@basil
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDiVtfvc+Y6Gwu8A3WsP3S09tefEE1QeSMe7MWA+llp1VIQb1NXWNL3SJuogP/cXPcGE/MsiFAYJdSKffgawXau6YVR/2fPVZlgytWdPdcvlDTv1Viy7U93I/7RjYLbDDP5Sh6ImeNb6BBnMuFHlkPuwx5p4/PmxGL2M8W9cdYf2uuNt/YToPAuCfJHeX+WOeNb3INomEwlqqUlm/PLn+ZIxgGuXbtZxLKObyZH022ihcAP0xik9n0GhbuXHYI9qv+DDb/0d4lsqFYpOp4TROb6nCsm5Mw2Z5XX5HcS4MJUzsnijyxIZen1GT2Y9vDgK5U7NbOqovvgJPjs5OPKQX5F ceedubs@gmail.com
+
+runcmd:
+  - systemctl start docker
+  - systemctl enable docker
+  - mkdir -p /etc/nimbus/secrets
+  - sed s/IPADDRESS/$(ec2-metadata -o | cut -d " " -f 2)/g < /etc/nimbus-template/config.template.json > /etc/nimbus/secrets/partial-config.json
+  - systemctl daemon-reload
+  - systemctl enable unison-cloud
+  - systemctl start unison-cloud
+
+write_files:
+  - path: /etc/nimbus-template/config.template.json
+    permissions: "0644"
+    encoding: base64
+    content: ${config_template}
+
+  - path: /etc/systemd/system/unison-cloud.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Unison Cloud Service
+      Requires=docker.service
+      After=docker.service
+
+      [Service]
+      Type=simple
+      Restart=always
+      RestartSec=10
+      ExecStartPre=-/usr/bin/docker stop unison-cloud
+      ExecStartPre=-/usr/bin/docker rm unison-cloud
+      ExecStart=/usr/bin/docker run \
+        --name unison-cloud \
+        --rm \
+        -p 8081:8081 \
+        -p 8082:8082 \
+        -e NIMBUS_CONFIG_DIR=/etc/nimbus/secrets \
+        -e NIMBUS_POLL_IAM_CREDENTIALS=true \
+        -e NIMBUS_MAX_CONNECTIONS_PER_HOST=64 \
+        -v /etc/nimbus/secrets:/etc/nimbus/secrets \
+        unisoncomputing/unison-cloud:${unison_cloud_image_tag}
+      ExecStop=/usr/bin/docker stop unison-cloud
+
+      [Install]
+      WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+*~
+output
+*private
+.terraform/
+unseal_key*
+vault_token
+.vscode
+.direnv
+terraform.tfvars
+terraform.tfstate*
+nimbus-secrets.json
+secrets.env
+.envrc
+outputs/
