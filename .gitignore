@@ -12,4 +12,4 @@ nimbus-secrets.json
 secrets.env
 .envrc
 outputs/
-
+.terraform.lock.hcl

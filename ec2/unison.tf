@@ -34,23 +34,22 @@ resource "aws_security_group" "unison" {
   }
 }
 
-locals {
-  unison_user_data = base64encode(templatefile("${path.module}/cloud-init.yaml", {
-    unison_cloud_image_tag = var.unison_cloud_image_tag
-    region                 = data.aws_region.current.name
-    config_template        = base64encode(data.template_file.config_template.rendered)
-  }))
-}
-
-data "template_file" "config_template" {
-  template = file("${path.module}/config.json.template")
-  vars = {
-    blob_bucket_name     = aws_s3_bucket.unison_cloud_byoc_blobs.bucket
-    services_bucket_name = aws_s3_bucket.unison_cloud_byoc_native_services.bucket
-    cluster_token        = data.http.cluster_token.response_body
-    region               = data.aws_region.current.name
-    dynamodb_table       = aws_dynamodb_table.unison_cloud_byoc_state.id
-    cluster_name         = var.cluster_name
+data "cloudinit_config" "unison-cloudinint" {
+  part {
+    merge_type   = "list(append)+dict(recurse_array)+str()"
+    content_type = "text/cloud-config"
+    content = templatefile("${path.module}/cloud-init.yaml", {
+      unison_cloud_image_tag = var.unison_cloud_image_tag
+      region                 = data.aws_region.current.name
+      config_template        = base64encode(templatefile("${path.module}/config.json.template", {
+        blob_bucket_name     = aws_s3_bucket.unison_cloud_byoc_blobs.bucket
+        services_bucket_name = aws_s3_bucket.unison_cloud_byoc_native_services.bucket
+        cluster_token        = data.http.cluster_token.response_body
+        region               = data.aws_region.current.name
+        dynamodb_table       = aws_dynamodb_table.unison_cloud_byoc_state.id
+        cluster_name         = var.cluster_name
+      }))
+    })
   }
 }
 
@@ -69,7 +68,7 @@ resource "aws_launch_template" "unison" {
     name = aws_iam_instance_profile.unison.name
   }
 
-  user_data = local.unison_user_data
+  user_data = data.cloudinit_config.unison-cloudinint.rendered
 
   tag_specifications {
     resource_type = "instance"
