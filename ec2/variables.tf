@@ -11,6 +11,11 @@ variable "aws_availability_zones" {
 variable "cluster_name" {
   type        = string
   description = "Name of the cluster"
+
+  validation {
+    condition     = var.cluster_name != "CHANGE_ME"
+    error_message = "You must edit the project_name variable from its default value before deploying."
+  }
 }
 
 variable "vpc_cidr" {
@@ -58,13 +63,13 @@ variable "unison_instance_type" {
 variable "unison_min_instances" {
   description = "Minimum number of Unison Cloud instances"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "unison_max_instances" {
   description = "Maximum number of Unison Cloud instances"
   type        = number
-  default     = 3
+  default     = 8
 }
 
 variable "unison_desired_instances" {

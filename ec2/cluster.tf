@@ -37,15 +37,3 @@ data "http" "set_cluster_uri" {
     depends_on = [terraform_data.cluster_uri]
 }
 
-output "cluster_id" {
-  value = data.http.cluster_id.response_body
-}
-
-output "cluster_token" {
-  value = data.http.cluster_token.response_body
-  sensitive = true
-}
-
-output "set_cluster_uri_response" {
-  value = data.http.set_cluster_uri.response_body
-}

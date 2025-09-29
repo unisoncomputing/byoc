@@ -45,9 +45,7 @@ If you use [Nix](https://nixos.org), there is a nix flake definition that instal
 
 ### terraform.tfvars
 
-You must create a `terraform.tfvars` file containing variables specific to your cluster. [variables.tf](variables.tf) contains all the variables you can set to customize the deployment. Many of these variables have defaults for a basic deployment that are optional in `terraform.tfvars`—some don't have defaults and must be set.
-
-There is a [terraform.tfvars.example](terraform.tfvars.example) file that contains all of the possible variables, you can use as a reference when creating your `terraform.tfvars`.
+[variables.tf](variables.tf) is where all of the variables for the deployment are defined. The values are set in [terraform.tfvars](terraform.tfvars). *You must* edit this file to set the `cluster_name` before deploying.
 
 #### Required variables:
 
@@ -57,13 +55,11 @@ The AWS region to deploy the cluster in. Examples include `us-west-2`, `us-east-
 
 You can find a complete list of zones and regions in the [AWS documentation](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-availability-zones.html).
 
-
 ##### `aws_availability_zones`
 
-A list of availability zones to use for the VPC. This should be a list of two or more availability zones in the region you are deploying to. For example, `["us-west-2a", "us-west-2b"]`. You must include at least two availability zones for the EKS cluster to be created successfully.
+A list of availability zones to use for the VPC. This should be a list of two or more availability zones in the region you are deploying to. For example, `["us-west-2a", "us-west-2b"]`. You must include at least two availability zones for the load balancer to work across multiple AZs.
 
 You can find a complete list of zones and regions in the [AWS documentation](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-availability-zones.html).
-
 
 ##### `cluster_name`
 

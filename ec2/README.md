@@ -42,9 +42,7 @@ If you use [Nix](https://nixos.org), there is a nix flake definition that instal
 
 ### terraform.tfvars
 
-You must create a `terraform.tfvars` file containing variables specific to your cluster. [variables.tf](variables.tf) contains all the variables you can set to customize the deployment. Many of these variables have defaults for a basic deployment that are optional in `terraform.tfvars`—some don't have defaults and must be set.
-
-There is a [terraform.tfvars.example](terraform.tfvars.example) file that contains all of the possible variables, you can use as a reference when creating your `terraform.tfvars`.
+[variables.tf](variables.tf) is where all of the variables for the deployment are defined. The values are set in [terraform.tfvars](terraform.tfvars). *You must* edit this file to set the `cluster_name` before deploying.
 
 #### Required variables:
 

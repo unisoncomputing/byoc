@@ -1,4 +1,19 @@
 
+output "update-kubeconfig-command" {
+  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
+  description = "Command to update your kubeconfig to connect to the new EKS cluster"
+}
+
+output "list-eks-nodes-command" {
+  value = <<EOF
+aws --region ${var.aws_region} ec2 describe-instances \
+  --filters "Name=tag:eks:cluster-name,Values=${var.cluster_name}" \
+  --query "Reservations[].Instances[].{Hostname:PrivateDnsName, Type:InstanceType, Health:State.Name}" \
+  --output table
+EOF
+  description = "command to get the health of the EKS nodes"
+}
+
 output "unison_public_endpoint_https" {
   value = "https://${aws_lb.main.dns_name}"
   description = "Public HTTPS endpoint for Unison Cloud API (with self-signed cert)"

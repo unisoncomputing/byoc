@@ -62,7 +62,7 @@ resource "kubernetes_config_map" "unison-cloud-config" {
     renderTemplate          = <<EOF
       #!/bin/sh
 
-      sed 's/{{POD_IP}}/'$${POD_IP}'/g ; s/{{CLUSTER_TOKEN}}/'${data.http.cluster_token.response_body}'/g' \
+      sed 's/{{POD_IP}}/'$${POD_IP}'/g ; s/{{CLUSTER_TOKEN}}/${data.http.cluster_token.response_body}/g' \
         < /etc/nimbus-template/config.json.template \
         > /etc/nimbus/secrets/partial-config.json
 EOF

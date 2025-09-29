@@ -11,6 +11,11 @@ variable "aws_availability_zones" {
 variable "cluster_name" {
   type        = string
   description = "Name of the EKS cluster"
+  
+  validation {
+    condition     = var.cluster_name != "CHANGE_ME"
+    error_message = "You must edit the cluster_name variable in terraform.tfvars before deploying."
+  }
 }
 
 variable "vpc_cidr" {
@@ -53,12 +58,6 @@ variable "kubernetes_admins" {
   type = list(string)
   description = "list of user arn's that get admin access to eks in addition to the user creating the cluster. A user can learn their ARN with `aws iam get-user | jq .User.Arn`"
   default = []
-}
-
-variable "unison_vpc_cidr" {
-  type        = string
-  description = "CIDR block for the Unison VPC"
-  default     = "172.20.0.0/16"
 }
 
 variable "unison_cloud_image_tag" {
