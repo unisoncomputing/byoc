@@ -75,11 +75,9 @@ $ tofu apply
 `tofu apply` will create all the needed resources in your AWS account, this might take 15-20 minutes. The script will output important information including the load balancer DNS name and bastion host IP.
 
 ### Using the cluster
-The script will generate a `outputs/cluster_setup.u` file that that contains a `ClientConfig` which you can use to deploy services and
-run jobs against your cluster. 
+The script will generate a `outputs/cluster_config.u` file that that contains a `ClientConfig` which you can use to deploy services and run jobs against your cluster. 
 
-You can save this output into your scratch file, or load this file into a ucm session with `> load /path/to/outputs/cluster_setup.u`. and then you should be able to `> run myJob` to launch a job on your new cluster!
-
+You can save this output into your scratch file, or load this file into a ucm session with `> load /path/to/outputs/cluster_config.u`. and then you should be able to `> run sampleJob` which will attempt to launch a job on your cluster.
 
 ## Tearing down the infrastructure
 

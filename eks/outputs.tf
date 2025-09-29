@@ -15,10 +15,10 @@ EOF
 }
 
 resource "local_file" "cluster_setup_script" {
-  filename = "${path.module}/outputs/cluster-setup.u"
+  filename = "${path.module}/outputs/cluster-config.u"
   content = <<EOF
 {{
-In order to connect to your cluster, You'll need to use a custom cluster config:
+In order to connect to your cluster, You'll need to use a custom cluster config
 }}
 
 clusterConfig = do
@@ -36,11 +36,13 @@ clusterConfig = do
 -- Instead of calling Cloud.run, which, by default, targets the Unison public cluster,
 -- use Cloud.run.withConfig to target your own cluster:
 
-myJob = do Cloud.run.withConfig clusterConfig() do
+sampleJob = do Cloud.run.withConfig clusterConfig() do
     env = default()
     two = submit env do
       1 + 1
     printLine ("remotely calculated: 1 + 1 = " ++ (Nat.toText two))
+
+
 EOF
 }
 
