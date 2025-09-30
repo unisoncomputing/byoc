@@ -33,7 +33,8 @@ locals {
   eks_cluster_name = "${var.cluster_name}"
   dynamodb_table_name = "${var.cluster_name}-state"
 
-  unison_credentials = jsondecode(file("~/.local/share/unisonlanguage/credentials.json"))
+  unison_credentials_file = "~/.local/share/unisonlanguage/credentials.json"
+  unison_credentials = jsondecode(fileexists(local.unison_credentials_file) ? file(local.unison_credentials_file) : file("/dev/null"))
   unison_token = local.unison_credentials.credentials.default["api.unison-lang.org"].tokens.access_token
 }
 
