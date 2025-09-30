@@ -34,7 +34,7 @@ locals {
   dynamodb_table_name = "${var.cluster_name}-state"
 
   unison_credentials_file = "~/.local/share/unisonlanguage/credentials.json"
-  unison_credentials = jsondecode(fileexists(local.unison_credentials_file) ? file(local.unison_credentials_file) : "{}")
+  unison_credentials = jsondecode(fileexists(local.unison_credentials_file) ? file(local.unison_credentials_file) : "{\"credentials\":{\"default\": {\"api.unison-lang.org\": {\"tokens\": {\"access_token\": \"\"}}}}}")
   unison_token = local.unison_credentials.credentials.default["api.unison-lang.org"].tokens.access_token
 }
 
