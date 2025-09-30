@@ -2,11 +2,12 @@
 
 ## Overview
 
-This repository contains instructions and configuration for running your own unison.cloud "Bring Your Own Cloud" (BYOC) cluster. There are multiple options based on how you'd like to deploy your cluster:
+This repository contains instructions and configuration for running your own unison.cloud "Bring Your Own Cloud" (BYOC) cluster. It is a [repository template](https://gitprotect.io/blog/how-to-use-github-repository-templates/) that you are intended to create a new repository from. There are multiple options based on how you'd like to deploy your cluster:
 
 - [Docker Compose instructions](docker/README.md) for a simple deployment on a local cluster.
 - [EC2 instructions](ec2/README.md) to use Terraform (or OpenTofu) to deploy to to AWS EC2 instances
 - [EKS instructions](eks/README.md) to use Terraform (or OpenTofu) to deploy on a Kubernetes cluster via AWS Elastic Kubernetes Service (EKS) and deploy Unison Cloud on the resulting Kubernetes cluster.
+
 
 
 ## Scope
