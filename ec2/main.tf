@@ -64,7 +64,7 @@ locals {
   bastion_sg_name = "${var.cluster_name}-bastion-sg"
 
   unison_credentials_file = "~/.local/share/unisonlanguage/credentials.json"
-  unison_credentials = jsondecode(fileexists(local.unison_credentials_file) ? file(local.unison_credentials_file) : file("/dev/null"))
+  unison_credentials = jsondecode(fileexists(local.unison_credentials_file) ? file(local.unison_credentials_file) : "{}")
   unison_token = local.unison_credentials.credentials.default["api.unison-lang.org"].tokens.access_token
 }
 
