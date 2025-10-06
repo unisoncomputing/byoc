@@ -8,7 +8,15 @@ This repository contains instructions and configuration for running your own uni
 - [EC2 instructions](ec2/README.md) to use Terraform (or OpenTofu) to deploy to to AWS EC2 instances
 - [EKS instructions](eks/README.md) to use Terraform (or OpenTofu) to deploy on a Kubernetes cluster via AWS Elastic Kubernetes Service (EKS) and deploy Unison Cloud on the resulting Kubernetes cluster.
 
+## Prerequisites
 
+In order to create and use your own Unison Cloud cluster, you will need:
+
+- A [unison.cloud](https://unison.cloud) account with an [active subscription](https://www.unison.cloud/signup/?plan=Starter).
+
+- UCM must be installed, you can see our [quickstart guide](https://www.unison-lang.org/docs/quickstart/) for setting that up.
+
+- You have to have recently run `auth.login` inside UCM.
 
 ## Scope
 
