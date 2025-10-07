@@ -96,7 +96,8 @@ EOF
               {
                 "uri": "https://${var.cluster_name}.byoc.unison.cloud"
               }
-            ]
+            ],
+            "tcpConfig" : { "type": "everybody" }
         }
 EOF
   }
