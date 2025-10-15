@@ -70,11 +70,16 @@ While it's referred to as the "public" HTTP port, there is no _need_ to make it 
 
 ## User-provided code execution
 
-Like Hadoop/Spark clusters, Kubernetes/Nomad clusters, and many other cloud offerings, nimbus nodes run user-provided code in submitted jobs and deployed services. Let's be real: at some level this is remote code execution as a service. However, Nimbus is able to lean on the strengths of the Unison programming language to mitigate the risks of running arbitrary code.
+Like Hadoop/Spark clusters, Kubernetes/Nomad clusters, and many other cloud offerings, nimbus nodes run user-provided code in submitted jobs and deployed services. Unison Cloud performs the expected authorization checks like:
+
+- Is this user able to deploy a job/service to this [environment][Environment]?
+- Does this user/job/service have access to the requested [config][Environment.Config]/[database][Database]?
+
+And in addition to the standard authorization checks you'd expect of any platform, Unison Cloud is able to lean on the strengths of the Unison programming language to mitigate the risks of running user code. Two Unison features that are especially well-suited to security and cloud computing are [content-addressed code][content-addressed-code] and [code sandboxing][sandboxing].
 
 ### Content-addressed code
 
-All code in Unison (and by extension user code submitted to Nimbus) is content-addressed. When a user (or cluster peer) sends a computation to a Nimbus node, they don't say that they want to run `Environment.Config.expect`; they specify that they want to run the function with the hash `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30`. If the receiving node already has a definition for `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30` then it can proceed with the computation. If it does _not_ know the definition that hashes to `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30`, then it will ask for a definition. Upon receiving the requested definition it verifies that the provided code matches the specified hash.
+All code in Unison (and by extension user code submitted to Nimbus) is content-addressed. When a user (or cluster peer) sends a computation to a Nimbus node, they don't say that they want to run `Environment.Config.expect`; they specify that they want to run the function with the hash `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30`. If the receiving node already has a definition for `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30` then it can proceed with the computation. If it does _not_ know the definition that hashes to `01bga3jq5u8ev85lsatbqip9hkrgr4jtr4li520b0r5gpvmi9el30`, then it will ask for a definition. Upon receiving the requested definition it [verifies][validateLinks] that the provided code matches the specified hash.
 
 This unique approach provides significant benefits:
 
@@ -95,12 +100,19 @@ Cloud.submit Environment.default() do
 Luckily, the Unison programming language supports fine-grained code sandboxing. Before Nimbus runs any user-provided code (via job submission, service deployment, etc), it runs the code through [reflection.Value.validateSandboxed][Value.validateSandboxed]. By default it disallows all code that performs IO or uses reflection to dynamically load code/values. By default it does allow a small number of builtins that are tracked as being potential sandbox candidates such as `toDebugText` which returns a textual representation of an arbitrary value (in practice this one is harmless albeit not particularly useful since the Nimbus runtime doesn't have user-provided names for definitions). If you'd like a different set of sandbox rules for your cluster, contact Unison Cloud support, and we can make the sandbox rules configurable.
 
 [architecture]: README.md
+[byoc]: https://www.unison.cloud/byoc/
 [cloud-client]: https://share.unison-lang.org/@unison/cloud
+[content-addressed-code]: #content-addressed-code
 [Cloud.deploy]: https://share.unison-lang.org/@unison/cloud/code/releases/21.2.0/latest/terms/Cloud/deploy
+[Database]: https://share.unison-lang.org/@unison/cloud/code/releases/21.2.1/latest/types/Database
 [developer-authorization]: #user-developer-authorization
+[Environment]: https://share.unison-lang.org/@unison/cloud/code/releases/21.2.1/latest/types/Environment
+[Environment.Config]: https://share.unison-lang.org/@unison/cloud/code/releases/21.2.1/latest/types/Environment/Config
 [envoy]: https://www.envoyproxy.io/
 [Value.validateSandboxed]: https://share.unison-lang.org/@unison/base/code/releases/6.5.0/latest/terms/reflection/Value/validateSandboxed
+[sandboxing]: #code-sandboxing
 [service-auth]: #service-authentication-and-authorization
 [Share]: https://share.unison-lang.org/
 [share-auth]: https://github.com/unisoncomputing/share-api/tree/main/share-auth
 [unison-auth]: https://share.unison-lang.org/@unison/auth
+[validateLinks]: https://share.unison-lang.org/@unison/base/code/releases/6.6.1/latest/terms/reflection/Code/validateLinks
