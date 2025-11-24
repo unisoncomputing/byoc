@@ -1,9 +1,3 @@
-
-output "update-kubeconfig-command" {
-  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
-  description = "Command to update your kubeconfig to connect to the new EKS cluster"
-}
-
 output "list-eks-nodes-command" {
   value = <<EOF
 aws --region ${var.aws_region} ec2 describe-instances \
