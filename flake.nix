@@ -36,6 +36,9 @@
             pushd eks
             tofu init -backend=false
             tofu validate
+            popd && pushd ec2
+            tofu init -backend=false
+            tofu validate
             popd && pushd docker
             docker compose -f docker-compose.yml --env-file secrets-example.env --env-file .env config -q
           '';
