@@ -18,6 +18,12 @@ In order to create and use your own Unison Cloud cluster, you will need:
 
 - You have to have recently run `auth.login` inside UCM.
 
+- You have [registered a Unison Cloud BYOC cluster](#register-a-byoc-cluster).
+
 ## Scope
 
 These configurations are intended to demonstrate minimalist deployments of unison.cloud. They are **not production-ready** but serve testing, development, and demonstration purposes. They provide an easy way to test unison.cloud in your own environment, with the expectation that you might later integrate these learnings into an existing production environment.
+
+## Register a BYOC cluster
+
+You can register a BYOC cluster by calling the [BYOC.createCluster](https://share.unison-lang.org/@unison/cloud/code/releases/26.0.0/latest/terms/BYOC/createCluster) command in the [Unison Cloud client](https://share.unison-lang.org/@unison/cloud).
